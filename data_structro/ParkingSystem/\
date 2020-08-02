@@ -1,0 +1,78 @@
+#ifndef __PARKINGSYSTEM__
+#define __PARKINGSYSTEM__
+
+/*-------车辆停车系统--------------------------*/
+
+
+//头文件
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+//宏定义
+#define MaxParkingSize 10    //停车场的最大车位数量
+
+
+//结构体的定义
+/*------1.时间信息--------*/
+typedef struct Time//时间结构体
+{
+	int hour;//小时
+	int minute;//分钟
+}Time;
+
+
+/*-------2.车辆信息--------------------*/
+typedef struct CarNode//创建车辆信息的结构体
+{
+	char CarNum[10];//车牌号
+	Time arrive;//车辆到达的时间
+	Time leave;//车辆离开的时间
+}CarNode,*CarNodePtr;
+typedef CarNodePtr CarMessage;//车辆信息的结构体指针
+
+
+/*----------停车场,临时停车场的栈----------*/
+typedef struct SeqStackNode
+{
+	CarMessage CarData[MaxParkingSize];//停车场顺序栈上的车辆信息　　这些车辆的车辆信息保存在开辟的连续内存空间上
+	int top;//栈顶
+}SeqStackNode,*SeqStackNodePtr;
+typedef SeqStackNodePtr CarParking;//停车场顺序栈的结构体指针
+
+
+/*-------------等待通道的链式队列------------------------------*/
+typedef struct LinkQueueNode
+{
+	CarMessage CarData;//保存等待通道链式队列的车辆信息　　这些车辆是用链式结构串起来的
+	struct LinkQueueNode *next;//指针域
+}LinkQueueNode,*LinkQueueNodePtr;
+typedef LinkQueueNodePtr LinkWaitArea;
+
+typedef struct WiatAearNode//定义等待链式队列的队头队尾指针
+{
+	LinkWaitArea top;//队头指针
+	LinkWaitArea rear;//队尾指针
+}WiatAearNode,WiatAearNodePtr;
+
+typedef WiatAearNodePtr WaitAear;//等待链式队列的结构体指针
+/**/
+//操作的状态                      
+typedef enum Status
+{
+	success,           //成功=0
+	fail,              //失败=1
+	fatal,             //致命的错误＝2
+	range_error,      //越界=3
+	empty,             //空
+	noempty,           //非空
+	full,              //满
+	nofull			   //非满
+}Status;
+
+//基本操作
+Status CarParking_Init(CarParking park);/*创建停车场顺序栈*/
+Status WaitAear_Init(WaitAear wait);/*创建等待通道链式队列*/
+
+
+#endif

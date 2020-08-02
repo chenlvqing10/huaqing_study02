@@ -1,0 +1,57 @@
+mysql -u root -p 
+
+show databases;
+
+create database StuMSystem;
+
+use StuMSystem;
+
+//create tables
+//用户信息表
+create table user_info(
+		username varchar(12) not null primary key,
+		passwd   varchar(10) not null,
+		usetype  int(1)		 not null
+		);
+//管理员信息表
+create table admin_info(
+		mag_no			varchar(10)      not null primary key,
+		admin_name		varchar(12)      not null,
+		admin_gender	enum('男','女')  not null,
+		admin_age		int(3)           not null,
+		admin_college	varchar(20)      not null
+		);
+//学生信息表
+create table stu_info(
+		stu_no        varchar(10)     not null primary key,
+		stu_name	  varchar(12)	  not null,
+		stu_gender	  enum('男','女') not null,
+		stu_age       int(3)          not null,
+		stu_college   varchar(20)     not null,
+		stu_grade	  varchar(4)      not null,
+		stu_class	  varchar(4)      not null,
+		stu_profs     varchar(20)     not null
+		);
+
+//学生科目表
+create table stu_sub(
+		stu_no         varchar(10)    not null primary key,
+		stu_college    varchar(20)    not null,
+		stu_profs      varchar(20)    not null,
+		stu_grade      varchar(20)    not null,
+		stu_class      varchar(4)     not null,
+		stu_year       varchar(4)     not null,
+		sub_maths     
+		sub_english
+		sub_c
+		sub_os
+		);
+//学生成绩表
+create table stu_score(
+		stu_no
+		stu_year
+		maths_score
+		english_score
+		c_score
+		os_score
+		);

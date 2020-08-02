@@ -1,0 +1,237 @@
+#include "head.h"
+
+void admin_ui()
+{
+	printf("/*********************************************************************************/\n");
+	printf("/*********************************************************************************/\n");
+	printf("/*********************************************************************************/\n");
+	if(login_status==0)
+	{
+		printf("/***********************欢迎进入管理员操作模块界面********************************/\n");
+	}
+	else
+	{
+		printf("/***********************欢迎返回管理员操作模块界面********************************/\n");
+	}
+	printf("/***********************1.添加管理员用户******************************************/\n");
+	printf("/***********************2.添加管理员自身的信息************************************/\n");
+	printf("/***********************3.学生信息的查询(包括成绩*********************************/\n");
+	printf("/***********************4.学生信息的修改******************************************/\n");
+	printf("/***********************5.学生信息的删除******************************************/\n");
+	printf("/***********************6.更新学生的成绩******************************************/\n");
+	printf("/***********************7.添加学院信息********************************************/\n");
+	printf("/***********************8.添加学生学期的科目信息**********************************/\n");
+	printf("/**********************9.添加学生学期的科目成绩(期末成绩)*************************/\n");
+	printf("/*********************************************************************************/\n");
+	printf("/*********************************************************************************/\n");
+	printf("/*********************************************************************************/\n");
+}
+
+void admin_add_ui()
+{
+	printf("/*********************************************************************************/\n");
+	printf("/*********************************************************************************/\n");
+	printf("/***********************请分别输入每个管理员的信息进行添加*************************/\n");
+	printf("/*********************************************************************************/\n");
+	printf("/*********************************************************************************/\n");
+}
+
+
+void admin_add(user_info_t *userinfo,admin_info_t *admininfo,MYSQL *mysql,MYSQL_RES* res,MYSQL_ROW row,char* query)
+{
+	//管理员信息添加界面
+	admin_add_ui();
+
+	char adminno[10]={0};//管理员编号
+	int year=1900;//入校年份声明并初始化
+	int month=0;//入校月份申明并初始化
+	char subadminno[10]={0};//得到管理员编号的后两位数值
+	char *pt_subadminno=subadminno;//指针先指向subadminno
+	int  gender=0;//性别 0--male  1--femal
+	char college_name[20]="信息技术学院";
+
+	//得到全部的管理员用户ID 一行一行添加
+	sprintf(query,"select user_info.user_no,username from user_info where usertype=2;");
+
+	if(mysql_real_query(mysql,query,strlen(query)) != 0)//执行数据库查询 成功返回0
+	{
+		printf("mysql_real_query():%s\n",mysql_error(mysql));
+		exit(-1);
+	}
+	else
+	{
+		printf("mysql_real_query() sucess!!!\n");
+	}
+
+	//查询成功后将服务端内容送到客户端
+	if((res=mysql_store_result(mysql)) == NULL)//获取查询结果的数据
+	{   
+		printf("mysql_store_result():%s\n",mysql_error(mysql));
+		exit(-1);
+	}
+	else
+	{
+		printf("mysql_store_result() success!!!\n");
+	}
+	while((row=mysql_fetch_row(res))!=NULL) //一行一行取得查询结果集数据    行数就是循环次数
+	{
+		//统计字段名个数(列数)
+		int fields=mysql_num_fields(res);
+		//打印字段的数据
+		for(int i=0; i<fields; i++)//行
+		{   
+			if(i==0)
+			{
+				printf("UserID=%s Username=%s\n",row[0],row[1]);
+
+
+				printf("请输入入校年份:");
+				scanf("%d",&year);
+				printf("请输入入校月份:");
+				scanf("%d",&month);
+				pt_subadminno=get_tableno(mysql,res,row,query,pt_subadminno,4,NULL);//管理员编号
+
+				//时间检查
+				time_t timep;
+				struct tm *p_time;
+				time(&timep);
+				p_time=localtime(&timep);
+
+				//年份的简单判断 比如得到现在的时间
+				if((year>p_time->tm_year+1900)||(year<1900))
+				{
+					printf("年份有问题,请重新输入入校年份!!!\n");
+					admin_add(userinfo,admininfo,mysql,res,row,query);
+				}
+
+				if((month<10)&&(month>=0))
+				{
+					sprintf(adminno,"%d0%d%s",year,month,subadminno);
+				}
+				else if((month>=10)&&(month<=12))
+				{
+					sprintf(adminno,"%d%d%s",year,month,subadminno);
+				}
+				else
+				{
+					printf("月份有问题，请重新输入入校月份\n!!!");
+					admin_add(userinfo,admininfo,mysql,res,row,query);
+				}
+			}
+		}
+		printf("管理员编号:%s\n",adminno);
+/*
+		printf("请输入管理员的姓名:");
+		scanf("%s",admininfo->admin_name);
+		printf("姓名:%s\n",admininfo->admin_name);
+
+		printf("请输入管理员的性别编号(0--male,1--femal):");
+		scanf("%d",&gender);
+		if(gender==0)
+			strcpy(admininfo->gender,"男");
+		else if(gender==1)
+			strcpy(admininfo->gender,"女");
+		printf("性别:%s\n",admininfo->gender);
+
+		printf("请输入管理员的年龄:");
+		scanf("%d",&admininfo->admin_age);
+		printf("年龄:%d\n",admininfo->admin_age);
+
+
+		printf("请输入管理员所在的学院:");
+		scanf("%s",college_name);
+*/
+		char collegeno[20]={0};//学院编号
+		char *pt_collegeno=collegeno;//指针指向学院编号
+		pt_collegeno=get_tableno(mysql,res,row,query,pt_collegeno,5,college_name);
+		printf("学院编号:%s",collegeno);
+
+	}
+
+
+}
+void admin_manager(user_info_t *userinfo,MYSQL *mysql)
+{
+	//结构体变量的声明
+	admin_info_t    *admininfo;//管理员信息
+	stu_info_t      *stuinfo;//学生信息
+	stu_sub_t       *stusub;//学生学期科目
+	stu_score_t     *stuscore;//学生学期科目成绩
+	college_info_t  *collegeinfo;//学院
+	profs_info_t    *profsinfo;//专业
+	sub_info_t      *subinfo;//科目
+
+	//分配内存
+	collegeinfo = (college_info_t*)malloc(sizeof(college_info_t));
+	admininfo   = (admin_info_t*)malloc(sizeof(admin_info_t));
+
+	//管理员管理模块界面
+	admin_ui();
+
+	/*与数据库进行交互 变量声明*/
+	MYSQL_RES *res = NULL;//数据库查询的结果集
+	MYSQL_ROW row=NULL;//char**  指向一个字符串数组，从结果集中取得数据
+	char query[500]={0};//放入sql语句
+	//int fields=0;//数据表中的字段数  列数
+	//int row_count=0;//行数
+
+	char ch;//输入的字符:1,2,3,4,5,6,7,8,9,0---退出
+	printf("请输入你的选项:\n");
+	while((ch = getchar()) != '0')
+	{
+		if(ch == '\n')
+			continue;
+		switch(ch)
+		{
+			case '1':
+				printf("添加管理员用户\n");
+				user_regist(userinfo,mysql,2);
+				break;
+			case '2':
+				printf("添加管理员自身信息\n");//插入到管理员信息表中
+				printf("先检查学院信息,如果学院信息为空要先添加相应的学院信息\n");//管理员信息表与学院用户表相联系
+				if(check_college_empty(collegeinfo,mysql,res,row,query)==true)
+				{
+					printf("学院信息为空\n");
+					college_manager(collegeinfo,mysql,res,row,query);
+					printf("按2添加用户信息\n");
+					printf("按7继续添加学院信息\n");
+				}
+				else
+				{
+					printf("学院信息不为空,进入管理员信息添加界面\n");
+					admin_add(userinfo,admininfo,mysql,res,row,query);
+				}
+				break;
+			case '3':
+				printf("添加管理员用户\n");
+				break;
+			case '4':
+				printf("添加管理员用户\n");
+				break;
+			case '5':
+				printf("添加管理员用户\n");
+				break;
+			case '6':
+				printf("添加管理员用户\n");
+				break;
+			case '7':
+				printf("添加学院信息\n");
+				college_manager(collegeinfo,mysql,res,row,query);
+				printf("按7以外的键继续管理员操作界面其他相关操作,按7继续添加学院信息,按0键退出管理员操作界面，返回用户登录主界面\n");
+				break;
+			case '8':
+				printf("添加管理员用户\n");
+				break;
+			case '9':
+				printf("添加管理员用户\n");
+				break;
+			default:
+				break;
+
+		}
+	}
+	//释放内存
+	free(collegeinfo);
+	free(admininfo);
+}
