@@ -55,3 +55,18 @@ create table stu_score(
 		c_score
 		os_score
 		);
+
+
+//查询语句
+select * from user_info left join admin_info on user_info.user_no = admin_info.user_no where user_info.usertype = 2 and admin_info.admin_no is NULL;//查询user_info中不包含admin_info的user_no
+//插入语句
+insert into user_info(user_info.user_no,user_info.username,user_info.passwd,user_info.usertype) VALUES();
+insert into admin_info(admin_info.admin_no,admin_info.admin_name,admin_info.admin_gender,admin_info.admin_age,admin_info.college_no,admin_info.user_no)
+VALUES();
+
+
+
+
+//删除语句
+delete from 
+//更新语句

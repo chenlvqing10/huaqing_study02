@@ -1,5 +1,6 @@
 #include "head.h"
 
+static int count_passwd = 0;
 //检查用户名的唯一性
 bool onlyone_username(user_info_t* userinfo,MYSQL* mysql,MYSQL_RES* res,MYSQL_ROW row,char* query)
 {
@@ -93,11 +94,12 @@ void user_insert(user_info_t* userinfo,MYSQL* mysql,MYSQL_RES* res,MYSQL_ROW row
 
 
 /*----------------用户注册模块-----------------*/
-void user_regist(user_info_t *userinfo,MYSQL *mysql,int usertype)
+//需要有一个返回值　　这样界面的跳转才比较合理？？？？？
+void user_regist(user_info_t *userinfo,MYSQL *mysql,int usertype,int logintype)
 {
-	if(usertype==1)
+	if(usertype==USERTYPE_STUDENT)
 		stu_regist_ui();//调用学生用户注册界面
-	else if(usertype==2)
+	else if(usertype==USERTYPE_ADMIN)
 		admin_regist_ui();//调用管理员用户注册界面
 
 	char current_passwd[20];//确认用户密码
@@ -111,23 +113,14 @@ void user_regist(user_info_t *userinfo,MYSQL *mysql,int usertype)
 	scanf("%s",userinfo->username);
 	//printf("userinfo-<username=%s\n",userinfo->username);
 
-	//用户名合法性判断，暂不判断
-	//密码合法性判断，暂不判断
+	//用户名合法性判断，暂不判断  由什么字符组成　几位
+	//密码合法性判断，暂不判断    由什么字符组成　几位
 
 	//用户名唯一性检查函数
 	if(onlyone_username(userinfo,mysql,res,row,query)==false)//不唯一
 	{
-		printf("用户名重复\n");
-		if(usertype==1)
-		{
-			printf("请重新注册!!!\n");
-			user_regist(userinfo,mysql,1);
-		}
-		else if(usertype==2)
-		{
-			printf("请重新添加!!!\n");
-			user_regist(userinfo,mysql,2);
-		}
+		printf("请重新注册!!!\n");
+		user_regist(userinfo,mysql,usertype,logintype);
 	}
 	else//用户名唯一
 	{
@@ -145,31 +138,56 @@ void user_regist(user_info_t *userinfo,MYSQL *mysql,int usertype)
 			user_insert(userinfo,mysql,res,row,query,usertype);//自动生成编号,插入用户信息到数据库用户表中
 			if(usertype==1)
 			{
-				printf("学生用户注册成功，接下来请在用户登录界面进行登录!!!\n");
-				user_manager(userinfo,mysql);
+				printf("学生用户注册成功\n");
+				if(logintype == USERTYPE_STUDENT)//如果登录用户是学生，则跳转到学生登录界面
+				{
+					printf("你是学生登录用户,学生用户注册成功后将会跳转至学生登录界面\n");
+					user_manager(userinfo,mysql,USERLOGIN,USERTYPE_OTHER,logintype);//???????
+					login_status = '0';
+				}
+				else if(logintype == USERTYPE_ADMIN)//如果登录用户是管理员,则跳转至管理员操作界面
+				{
+					printf("你是管理员登录用户,学生用户添加成功后将会跳转至管理员操作界面\n");
+
+				}
 			}
 			else if(usertype==2)
 			{
 				printf("管理员用户添加成功!!!\n");
-				admin_manager(userinfo,mysql);//回答管理模块界面
+				admin_manager(userinfo,mysql);//回到管理模块界面
 				//printf("按3放回管理员用户管理界面\n");
 			}
 		}
 		else
 		{
 			printf("前后密码不一致\n");
-			if(usertype==1)
+			count_passwd++;
+
+			if(count_passwd>=3)
+			{
+				printf("密码输错三次，退出注册程序\n");
+				count_passwd = 0;
+				exit(EXIT_FAILURE);
+			}
+
+			if((usertype==USERTYPE_STUDENT)&&(logintype==LOGINTYPE_STUDENT))
 			{
 				printf("请重新注册!!!\n");
-				user_regist(userinfo,mysql,1);
+				user_regist(userinfo,mysql,USERTYPE_STUDENT,LOGINTYPE_STUDENT);
 			}
-			else if(usertype==2)
+			else if((usertype == USERTYPE_STUDENT)&&(logintype == LOGINTYPE_ADMIN))
 			{
-				printf("请重新添加!!!\n");
-				user_regist(userinfo,mysql,2);
+				printf("请重新添加学生用户\n");
+				user_regist(userinfo,mysql,USERTYPE_STUDENT,LOGINTYPE_ADMIN);
+			}
+			else if((usertype==USERTYPE_ADMIN)&&(logintype==LOGINTYPE_ADMIN))
+			{
+				printf("请重新添加管理员用户\n");
+				user_regist(userinfo,mysql,USERTYPE_ADMIN,LOGINTYPE_ADMIN);
 			}
 		}
 	}
 	/*释放内存空间*/
 	mysql_free_result(res); 
 }
+
