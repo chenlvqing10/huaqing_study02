@@ -21,8 +21,8 @@
 
 #define  QUIT			"quit"
 #define  SERVER_PORT     1259
-#define  SERVER_IP		"192.168.75.157"
-#define  CLIENT_IP		"192.168.75.157"
+#define  SERVER_IP		"192.168.60.153"
+#define  CLIENT_IP		"192.168.60.153"
 #define  CLIENT_PORT	6667
 #define  CLIENT_PORT1	6668
 #define  CLIENT_PORT2	6669
