@@ -269,7 +269,7 @@ void userinfo_manager(user_info_t *userinfo,MYSQL *mysql,int logintype)
 	else if(logintype == LOGINTYPE_ADMIN)//登录者是管理员
 	{
 		userinfo_ui();//界面
-
+		printf("请输入你的选项:");
 		while((ch = getchar()) != '0')
 		{
 			if(ch == '\n')
@@ -293,10 +293,13 @@ void userinfo_manager(user_info_t *userinfo,MYSQL *mysql,int logintype)
 				case '4':
 					userinfo_select(userinfo,mysql);//用户信息查询
 					break;
+				case '5':
+					userinfo_select(userinfo,mysql);//用户信息删除  注意外键相关的数据表
 				default:
 					break;
 			}
-
+			userinfo_ui();//界面
+			printf("请输入你的选项:");
 		}
 	}
 }

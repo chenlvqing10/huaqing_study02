@@ -425,6 +425,7 @@ void admininfo_manager(user_info_t *userinfo,admin_info_t *admininfo,college_inf
 
 	int i = 0;
 	admininfo_ui();
+	printf("请输入你的选项:");
 	while((ch = getchar()) != '0')//按0退出循环
 	{
 		if(ch == '\n')
@@ -481,6 +482,8 @@ void admininfo_manager(user_info_t *userinfo,admin_info_t *admininfo,college_inf
 			default:
 				break;
 		}
+		admininfo_ui();
+		printf("请输入你的选项:");
 	}
 
 	printf("file:%s  func:%s  line:%d",__FILE__,__FUNCTION__,__LINE__);
@@ -522,7 +525,7 @@ void admin_manager(user_info_t *userinfo,MYSQL *mysql)
 	/*与数据库进行交互 变量声明*/
 	MYSQL_RES *res = NULL;//数据库查询的结果集
 	MYSQL_ROW row=NULL;//char**  指向一个字符串数组，从结果集中取得数据
-	char query[500]={0};//放入sql语句
+	char query[1000]={0};//放入sql语句  sql语句的长度有可能会比较长  这里分配的栈空间如果过小会造成栈溢出
 
 	//根据选项的不同进行界面操作
 	char ch;//输入的字符:1,2,3,4,5,6,7,8,9,A,0---退出
@@ -606,6 +609,7 @@ void admin_manager(user_info_t *userinfo,MYSQL *mysql)
 		admin_ui();
 		printf("请输入你的选项:\n");
 	}
+	printf("file:%s  func:%s  line:%d",__FILE__,__FUNCTION__,__LINE__);
 
 	//释放内存
 	free(collegeinfo);
@@ -616,4 +620,6 @@ void admin_manager(user_info_t *userinfo,MYSQL *mysql)
 	free(subinfo);
 	free(stusub);
 	free(stuscore);
+	printf("file:%s  func:%s  line:%d",__FILE__,__FUNCTION__,__LINE__);
+
 }

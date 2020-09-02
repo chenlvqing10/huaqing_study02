@@ -60,13 +60,13 @@ bool check_username(user_info_t *userinfo,MYSQL *mysql,MYSQL_RES *res,MYSQL_ROW 
 	}
 
 	printf("is_username=%d\n",is_username);
-//	init_sql(res,query,row);
 	return is_username;
 }
 
 //检查用户密码 同时获得用户类型
 bool check_passwd(user_info_t *userinfo,MYSQL *mysql,MYSQL_RES *res,MYSQL_ROW row,char *query)
 {
+	init_sql(res,query,row);
 	bool is_passwd=false;
 	sprintf(query,"select user_info.username,user_info.passwd,user_info.usertype from user_info where user_info.username=\"%s\" and user_info.passwd=\"%s\";",
 			userinfo->username,userinfo->passwd);
@@ -104,7 +104,6 @@ bool check_passwd(user_info_t *userinfo,MYSQL *mysql,MYSQL_RES *res,MYSQL_ROW ro
 		usertype=*row[2];
 	}
 
-	init_sql(res,query,row);
 	return is_passwd;
 }
 

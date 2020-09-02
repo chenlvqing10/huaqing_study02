@@ -4,34 +4,38 @@
 //tableno=1  用户表 学生用户   tableno=2 用户表 管理员用户  tableno=3  学院信息表  tableno=4 管理员编号　　tableno=5  学生编号 
 char* get_tableno(MYSQL* mysql,MYSQL_RES* res,MYSQL_ROW row,char* query,char* pt_tableno,int tableno,char* name)
 {  
-	int fields=0;//列数 字段
+	int maxid  = 0;//得到最大的编号
 
-	if(tableno==1)
+	if(tableno==GET_USERNO_STUDENT)
 	{
 		sprintf(query,"select user_info.user_no from user_info where usertype=1;");//学生用户编号
 	}
-	else if(tableno==2)
+	else if(tableno==GET_USERNO_ADMIN)
 	{
 		sprintf(query,"select user_info.user_no from user_info where usertype=2;");//管理员用户编号
 	}
-	else if(tableno==3)
+	else if(tableno==GET_COLLEGENO)
 	{
 		sprintf(query,"select college_info.college_no from college_info;");//学院编号
 	}
-	else if(tableno==4)
+	else if(tableno==GET_ADMINNO)
 	{
 		sprintf(query,"select admin_info.admin_no from admin_info;");//管理员编号
 	}
-	else if(tableno==5)
+	else if(tableno==GET_COLLEGENOBYNAME)
 	{
 		if(name!=NULL)
 		{
 			mysql_query(mysql, "set names \'utf8\'");
 			sprintf(query,"select college_no from college_info where college_name=\"%s\";",name);//根据学院名字获得学院编号
-			printf("sql语句:%s\n",query);
+		}
+		else
+		{
+			printf("学院名字为空\n");
+			return NULL;
 		}
 	}
-	else if(tableno==6)//学生编号
+	else if(tableno==GET_STUNO)//学生编号
 	{
 		sprintf(query,"select stu_no from stu_info;");
 	}
@@ -69,21 +73,18 @@ char* get_tableno(MYSQL* mysql,MYSQL_RES* res,MYSQL_ROW row,char* query,char* pt
 	while((row=mysql_fetch_row(res))!=NULL) //一行一行取得查询结果集数据    行数就是循环次数
 	{
 		printf("取得数据成功!!!\n");
-		//统计字段名个数(列数)
-		fields=mysql_num_fields(res);
-		//将数据copy到tableno指针指向的内存
-		for(int i=0; i<fields; i++)//行
-		{
-			strcpy(pt_tableno,row[i]);
-		}                  
+		strcpy(pt_tableno,row[0]);
+		printf("pt_tableno=%s\n",pt_tableno);//得到最后的编号
+		maxid =(atoi(pt_tableno) > maxid)?atoi(pt_tableno):maxid;
 	}
-
+	
+	printf("maxid = %d\n",maxid);
+	sprintf(pt_tableno,"%d",maxid);
 	printf("pt_tableno=%s\n",pt_tableno);//得到最后的编号
 
-
-	if((tableno==3)||(tableno==GET_PROFSNO)||(tableno==GET_SUBNO))//学院编号/专业编号/科目编号  需要进行一定的形式转换
+	if((tableno == GET_COLLEGENO) || (tableno == GET_COLLEGENOBYNAME) || (tableno == GET_PROFSNO) || (tableno == GET_SUBNO))//学院编号/专业编号/科目编号  需要进行一定的形式转换
 	{
-		if(strcmp(pt_tableno,"")==0)//空字符串
+		if(strcmp(pt_tableno,"") == 0)//空字符串
 		{
 			strcpy(pt_tableno,"0001");
 		}
@@ -97,11 +98,11 @@ char* get_tableno(MYSQL* mysql,MYSQL_RES* res,MYSQL_ROW row,char* query,char* pt
 				sprintf(pt_tableno,"0%d",atoi(pt_tableno)+1);
 		}
 	}
-	else if((tableno==1)||(tableno==2))//处理用户编号
+	else if((tableno==GET_USERNO_STUDENT)||(tableno==GET_USERNO_ADMIN))//处理用户编号
 	{
 		if(strcmp(pt_tableno,"")==0)//空字符串
 		{
-			if(tableno == 1)
+			if(tableno == GET_USERNO_STUDENT)
 			{
 				strcpy(pt_tableno,"1000001");
 			}
@@ -109,14 +110,14 @@ char* get_tableno(MYSQL* mysql,MYSQL_RES* res,MYSQL_ROW row,char* query,char* pt
 			{
 				strcpy(pt_tableno,"2000001");
 			}
-	printf("pt_tableno=%s\n",pt_tableno);//得到最后的编号
+			printf("pt_tableno=%s\n",pt_tableno);//得到最后的编号
 		}
 		else
 		{
 			sprintf(pt_tableno,"%d",atoi(pt_tableno)+1);
 		}
 	}
-	else if((tableno==4) || (tableno==6))//管理员编号和学生编号　年份+月份+取最后两位
+	else if((tableno==GET_ADMINNO) || (tableno==GET_STUNO))//管理员编号和学生编号　年份+月份+取最后两位
 	{
 		if(strcmp(pt_tableno,"")==0)//空字符串
 		{
@@ -134,8 +135,8 @@ char* get_tableno(MYSQL* mysql,MYSQL_RES* res,MYSQL_ROW row,char* query,char* pt
 				sprintf(pt_tableno,"%d",atoi(pt_tableno)+1);
 		}
 	}
-	printf("最新的编号:%s\n",pt_tableno);
 
+	printf("最新的编号:%s\n",pt_tableno);
 	init_sql(res,query,row);	
 	return pt_tableno;
 }

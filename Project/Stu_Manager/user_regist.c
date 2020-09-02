@@ -5,10 +5,7 @@ static int count_passwd = 0;
 bool onlyone_username(user_info_t* userinfo,MYSQL* mysql,MYSQL_RES* res,MYSQL_ROW row,char* query)
 {
 	bool isonlyone=true;
-	int fields=0;
-
 	sprintf(query,"select user_info.username from user_info");
-	//printf("query=%s\n",query);
 
 	if(mysql_real_query(mysql,query,strlen(query)) != 0)//执行数据库查询 成功返回0
 	{
@@ -32,22 +29,12 @@ bool onlyone_username(user_info_t* userinfo,MYSQL* mysql,MYSQL_RES* res,MYSQL_RO
 	}
 	while((row=mysql_fetch_row(res))!=NULL) //一行一行取得查询结果集数据	行数就是循环次数
 	{
-		//统计字段名个数(列数)
-		fields=mysql_num_fields(res);
-		//printf("fields:%d\n",fields);
-		//打印字段的数据
-		for(int i=0; i<fields; i++)//行
+		if(strcmp(userinfo->username,row[0])==0)
 		{
-			//printf("name=%s\n",row[i]);
-			//printf("username=%s\n",userinfo->username);
-			if(strcmp(userinfo->username,row[i])==0)
-			{
-				printf("用户名一样\n");
-				isonlyone=false;
-			}
+			printf("用户名一样\n");
+			isonlyone=false;
 		}
 	}
-	init_sql(res,query,row);
 	return isonlyone;
 }
 
@@ -74,13 +61,17 @@ void user_insert(user_info_t* userinfo,MYSQL* mysql,MYSQL_RES* res,MYSQL_ROW row
 {
 	char userno[20]={0};//学生用户编号
 	char *pt_userno=userno;//指向userno的指针
-	pt_userno=get_tableno(mysql,res,row,query,pt_userno,1,NULL);//用户编号
 	//将用户信息插入到数据库
 	if(usertype==1)//如果是学生用户
+	{
+		pt_userno=get_tableno(mysql,res,row,query,pt_userno,GET_USERNO_STUDENT,NULL);//学生用户编号
 		sprintf(query,"insert into user_info(user_no,username,passwd,usertype)VALUES(\"%s\",\"%s\",\"%s\",1);",userno,userinfo->username,userinfo->passwd);
+	}
 	else if(usertype==2)//管理员用户
+	{
+		pt_userno=get_tableno(mysql,res,row,query,pt_userno,GET_USERNO_ADMIN,NULL);//管理员用户编号
 		sprintf(query,"insert into user_info(user_no,username,passwd,usertype)VALUES(\"%s\",\"%s\",\"%s\",2);",userno,userinfo->username,userinfo->passwd);
-
+	}
 	if(mysql_real_query(mysql,query,strlen(query)) != 0)//执行sql语句 成功返回0
 	{
 		printf("mysql_real_query():%s\n",mysql_error(mysql));
@@ -94,7 +85,7 @@ void user_insert(user_info_t* userinfo,MYSQL* mysql,MYSQL_RES* res,MYSQL_ROW row
 
 
 /*----------------用户注册模块-----------------*/
-//需要有一个返回值　　这样界面的跳转才比较合理？？？？？
+//需要有一个返回值　　界面跳转比较合理
 void user_regist(user_info_t *userinfo,MYSQL *mysql,int usertype,int logintype)
 {
 	if(usertype==USERTYPE_STUDENT)
@@ -111,7 +102,6 @@ void user_regist(user_info_t *userinfo,MYSQL *mysql,int usertype,int logintype)
 	//输入用户名
 	printf("请输入你的用户名:");
 	scanf("%s",userinfo->username);
-	//printf("userinfo-<username=%s\n",userinfo->username);
 
 	//用户名合法性判断，暂不判断  由什么字符组成　几位
 	//密码合法性判断，暂不判断    由什么字符组成　几位
@@ -142,7 +132,7 @@ void user_regist(user_info_t *userinfo,MYSQL *mysql,int usertype,int logintype)
 				if(logintype == USERTYPE_STUDENT)//如果登录用户是学生，则跳转到学生登录界面
 				{
 					printf("你是学生登录用户,学生用户注册成功后将会跳转至学生登录界面\n");
-					user_manager(userinfo,mysql,USERLOGIN,USERTYPE_OTHER,logintype);//???????
+					user_manager(userinfo,mysql,USERLOGIN,USERTYPE_OTHER,LOGINTYPE_STUDENT);//
 					login_status = '0';
 				}
 				else if(logintype == USERTYPE_ADMIN)//如果登录用户是管理员,则跳转至管理员操作界面

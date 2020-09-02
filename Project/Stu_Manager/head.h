@@ -6,6 +6,9 @@
 /*业务逻辑改进:学生成绩类型--期中成绩 期末成绩等*/
 /*qt界面实现*/
 
+
+/*错误*/
+//1.stack溢出  分配的栈内存太小   char query[500]  实际上sql语句有超过500的可能 
 /*引用mysql数据库的头文件*/
 #include "/usr/include/mysql/mysql.h"
 
@@ -158,8 +161,14 @@ typedef struct year_info
 #define   OPTYPE_STUDENT_STU_SUBINFO		10
 #define   OPTYPE_STUDENT_STU_INSERT		    11
 
-#define    GET_PROFSNO    7
-#define    GET_SUBNO      8
+#define    GET_USERNO_STUDENT    1          //学生用户编号
+#define    GET_USERNO_ADMIN      2          //管理用户编号
+#define    GET_COLLEGENO         3          //学院编号
+#define    GET_ADMINNO           4			//管理员编号
+#define    GET_COLLEGENOBYNAME   5          //根据学院名字获取管理员编号
+#define    GET_STUNO             6			//学生编号
+#define    GET_PROFSNO           7			//专业编号
+#define    GET_SUBNO             8			//科目编号
 
 #define    MAXSIZE_TABLE  100//数据表中行数
 

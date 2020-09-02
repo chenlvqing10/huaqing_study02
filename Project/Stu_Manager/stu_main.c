@@ -5,7 +5,7 @@ void init_sql(MYSQL_RES *res,char *query,MYSQL_ROW row)
 {
 	//  printf("初始化\n");
 	mysql_free_result(res); //释放本次查询的结果集
-	memset(query,0,sizeof(char)*200);//重新初始化
+	memset(query,0,strlen(query)+1);//重新初始化
 	res=NULL;
 	row=NULL;
 }
@@ -150,13 +150,15 @@ int main(int argc, const char *argv[])
 				printf("进入学生注册界面\n");
 				user_regist(userinfo,mysql,USERTYPE_STUDENT,LOGINTYPE_STUDENT);
 			default:
+				printf("输入错误字符\n");
 				break;
 		}
 		printf("退出%s  %s第二层循环\n",__FILE__,__FUNCTION__);
 		while(getchar()!='\n');//清一下缓冲区 防止乱码
 		system_ui();//登录后每次跳出循环之后进行引导
+		printf("请输入选项:\n");
 		//清空登录状态
-		login_status = 0;
+		login_status = '0';
 	}
 
 	//释放内存
